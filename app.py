@@ -3,48 +3,41 @@ import pandas as pd
 import plotly.express as px
 
 # 1. Load Data
-try:
-    df_details = pd.read_csv('Details.csv')
-    df_orders = pd.read_csv('Orders.csv')
-except FileNotFoundError:
-    # 为了演示代码运行，如果没有文件，这里生成一些假数据
-    # 实际运行时请删除这块 try-except，保留你的 pd.read_csv
-    print("未找到CSV文件，使用模拟数据...")
-    data = {
-        'Order ID': [f'ORD-{i}' for i in range(100)],
-        'Amount': [i * 10 for i in range(100)],
-        'Profit': [i * 2 for i in range(100)],
-        'Quantity': [i % 5 + 1 for i in range(100)],
-        'Category': ['Office'] * 50 + ['Tech'] * 50,
-        'Sub-Category': ['Phones', 'Binders', 'Chairs', 'Storage'] * 25,
-        'State': ['CA', 'NY', 'TX', 'WA', 'FL'] * 20,
-        'CustomerName': [f'Customer {i}' for i in range(100)]
-    }
-    df_details = pd.DataFrame(data)
-    df_orders = pd.DataFrame(data)
-    # 模拟数据结束
+# Details.csv 包含：订单明细（金额、利润、品类、子品类、支付方式等）
+# Orders.csv 包含：订单主信息（订单日期、客户、城市、州等）
+# 这两行会把两个文件读入内存，生成两个 DataFrame 对象 
+# 脚本与 Details.csv、Orders.csv 在同一目录下，否则要写完整路径 
+df_details = pd.read_csv('Details.csv')
+df_orders = pd.read_csv('Orders.csv')
 
 # 2. Merge Data
+# 使用 pd.merge() 将两个表按 "Order ID" 字段内连接（inner join）。
+# 结果 df_global 会包含：
+# 所有 Details.csv 的字段（Amount, Profit, Category...）
+# 所有 Orders.csv 的字段（Order Date, CustomerName, State, City...）
+# 只保留两个表中都存在的 Order ID (inner join 的特性)  
 df_global = pd.merge(df_details, df_orders, on="Order ID", how="inner")
 
 # 3. Data Cleaning
-# 处理列名可能存在的重复（merge有时会产生 _x, _y），这里假设没有冲突
-# 清理字符串空白
+# 防止因 " Electronics " 和 "Electronics" 被识别为不同类别。
+# .astype(str) 确保即使有空值（NaN）也不会报错（NaN 会变成 "nan" 字符串，但通常数据中不应有）。
+# .str.strip() 去除字符串首尾空格
 if "Sub-Category" in df_global.columns:
     df_global["Sub-Category"] = df_global["Sub-Category"].astype(str).str.strip()
 if "Category" in df_global.columns:
     df_global["Category"] = df_global["Category"].astype(str).str.strip()
 
 # 4. Calculate Global KPIs
+# Total Amount 
 total_amount = df_global['Amount'].sum()
+# Total Profit
 total_profit = df_global['Profit'].sum()
+# Total Quantity
 total_quantity = df_global['Quantity'].sum()
-total_orders = df_global['Order ID'].nunique()
+# Total Counts of Orders 
+total_orders = df_global['Order ID'].nunique() 
 
-# ==========================================
-# 5. Prepare Chart Data (Aggregation)
-# ==========================================
-
+# 5. Prepare Chart Data 
 # Chart 1: Total Profit by Sub-Category (Sorted)
 df_sub_cat = df_global.groupby('Sub-Category')['Profit'].sum().reset_index()
 df_sub_cat = df_sub_cat.sort_values(by='Profit', ascending=False)
@@ -57,10 +50,7 @@ df_state = df_state.sort_values(by='Amount', ascending=False).head(10) # 只取�
 df_customer = df_global.groupby('CustomerName')['Amount'].sum().reset_index()
 df_customer = df_customer.sort_values(by='Amount', ascending=False).head(10) # 只取前10
 
-
-# ==========================================
 # 6. Dashboard Layout
-# ==========================================
 @ui.page('/')
 def main():
     # --- CSS Styles ---
@@ -146,20 +136,26 @@ def main():
 
         # Chart 2: Sales by State
         with ui.card().classes('chart-card flex-1'):
+            # 创建 Plotly Figur
             fig2 = px.bar(df_state, x='State', y='Amount', 
                           title='Top 10 States by Sales', template='plotly_white')
+            # 调整 layout 让图表更紧凑
             fig2.update_layout(margin=dict(l=20, r=20, t=40, b=20), paper_bgcolor='rgba(0,0,0,0)')
             # 设置颜色区分
             fig2.update_traces(marker_color='#3b82f6') 
+            # 渲染图表
             ui.plotly(fig2).classes('w-full h-80')
 
         # Chart 3: Sales by Customer
         with ui.card().classes('chart-card flex-1'):
+            # 创建 Plotly Figur
             fig3 = px.bar(df_customer, x='CustomerName', y='Amount', 
                           title='Top 10 Customers by Sales', template='plotly_white')
+            # 调整 layout 让图表更紧凑
             fig3.update_layout(margin=dict(l=20, r=20, t=40, b=20), paper_bgcolor='rgba(0,0,0,0)')
             # 设置颜色区分
             fig3.update_traces(marker_color='#10b981')
+            # 渲染图表
             ui.plotly(fig3).classes('w-full h-80')
 
 ui.run(title='Sales Dashboard', port=8081)
