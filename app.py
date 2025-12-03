@@ -77,7 +77,7 @@ def main():
     ui.label('📊 Sales Overview').classes('text-2xl font-bold text-center mb-6 text-gray-800')
 
     # --- ROW 1: KPIs ---
-    # 相同的样式的KPI卡片，这里用循环简化代码
+    # ui.row() 相同的样式的KPI卡片，这里用循环简化代码
     with ui.row().classes('w-full justify-between gap-4 px-10 mb-8'):
         for title, value in [
             ('Total Amount', f'${total_amount:,.0f}'),
@@ -88,21 +88,47 @@ def main():
             with ui.card().classes('kpi-card flex-1'):
                 ui.label(title).classes('kpi-title')
                 ui.label(value).classes('kpi-value')
+
+    # # ui.row() 差异化样式的KPI卡片, 直接分开写可能更直观, 便于后续调整, 这里保留
+    # with ui.row().classes('w-full gap-4 mb-8 px-10'):
+    #     with ui.card().classes('flex-1 p-4 bg-blue-50 border-l-4 border-blue-500'):
+    #         ui.label("Total Sales").classes('text-gray-600')
+    #         ui.label(f"${total_amount:,.0f}").classes('text-xl font-bold text-blue-700')
+
+    #     with ui.card().classes('flex-1 p-4 bg-green-50 border-l-4 border-green-500'):
+    #         ui.label("Total Profit").classes('text-gray-600')
+    #         ui.label(f"${total_profit:,.0f}").classes('text-xl font-bold text-green-700')
+
+    #     with ui.card().classes('flex-1 p-4 bg-amber-50 border-l-4 border-amber-500'):
+    #         ui.label("Avg Profit Margin").classes('text-gray-600')
+    #         margin = (total_profit / total_amount * 100) if total_amount != 0 else 0
+    #         ui.label(f"{margin:.1f}%").classes('text-xl font-bold text-amber-700')
+
+    #     with ui.card().classes('flex-1 p-4 bg-purple-50 border-l-4 border-purple-500'):
+    #         ui.label("Total Orders").classes('text-gray-600')
+    #         ui.label(f"{total_orders:,}").classes('text-xl font-bold text-purple-700')
     
-    # 差异化样式的KPI卡片, 直接分开写可能更直观, 便于后续调整, 这里保留 
-    with ui.grid(columns=4).classes('w-full gap-4 mb-6'):
-        with ui.card().classes('p-4 bg-blue-50 border-l-4 border-blue-500'):
-            ui.label("Total Sales").classes('text-gray-600')
-            self.kpi_sales = ui.label("$0").classes('text-xl font-bold text-blue-700')
-        with ui.card().classes('p-4 bg-green-50 border-l-4 border-green-500'):
-            ui.label("Total Profit").classes('text-gray-600')
-            self.kpi_profit = ui.label("$0").classes('text-xl font-bold text-green-700')
-        with ui.card().classes('p-4 bg-amber-50 border-l-4 border-amber-500'):
-            ui.label("Avg Profit Margin").classes('text-gray-600')
-            self.kpi_margin = ui.label("0%").classes('text-xl font-bold text-amber-700')
-        with ui.card().classes('p-4 bg-purple-50 border-l-4 border-purple-500'):
-            ui.label("Total Orders").classes('text-gray-600')
-            self.kpi_orders = ui.label("0").classes('text-xl font-bold text-purple-700')
+    # # ui.grid() 差异化样式的KPI卡片, 直接分开写可能更直观, 便于后续调整, 这里保留 
+    # with ui.grid(columns=4).classes('w-full gap-6 mb-10 max-w-7xl mx-auto'):
+    #     # Total Sales - 蓝色
+    #     with ui.card().classes('p-6 bg-blue-50 border-l-8 border-blue-600 shadow-lg'):
+    #         ui.label("Total Sales").classes('text-gray-700 text-sm font-medium')
+    #         ui.label(f'${total_amount:,.0f}').classes('text-3xl font-bold text-blue-700')
+
+    #     # Total Profit - 绿色
+    #     with ui.card().classes('p-6 bg-green-50 border-l-8 border-green-600 shadow-lg'):
+    #         ui.label("Total Profit").classes('text-gray-700 text-sm font-medium')
+    #         ui.label(f'${total_profit:,.0f}').classes('text-3xl font-bold text-green-700')
+
+    #     # Total Quantity - 橙色
+    #     with ui.card().classes('p-6 bg-amber-50 border-l-8 border-amber-600 shadow-lg'):
+    #         ui.label("Total Quantity").classes('text-gray-700 text-sm font-medium')
+    #         ui.label(f'{total_quantity:,}').classes('text-3xl font-bold text-amber-700')
+
+    #     # Order Count - 紫色
+    #     with ui.card().classes('p-6 bg-purple-50 border-l-8 border-purple-600 shadow-lg'):
+    #         ui.label("Order Count").classes('text-gray-700 text-sm font-medium')
+    #         ui.label(f'{total_orders:,}').classes('text-3xl font-bold text-purple-700')
 
     # --- ROW 2: Bar Charts ---
     # 使用 flex-1 让三个图表平分宽度
