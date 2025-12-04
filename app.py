@@ -66,6 +66,7 @@ def main():
             .kpi-title { font-size: 0.9rem; opacity: 0.9; }
             .kpi-value { font-size: 1.8rem; font-weight: bold; margin-top: 4px; }
             .chart-card { border-radius: 8px; padding: 4px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #eee; }
+            .filter-tag { background-color: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
         </style>
     ''')
 
@@ -132,7 +133,7 @@ def main():
     # Cross Filter Logic 
     # 编写 refresh_dashboard() 函数 
     # 这个函数负责：
-    #   1. 更新顶部筛选标签（显示当前筛选 + 重置按钮）
+    #   1. 顶部筛选标签（显示当前筛选 + 重置按钮）
     #   2. 重新计算 KPI（用 get_filtered_df(None)）
     #   3. 重新生成三个图表（分别调用 get_filtered_df('Sub-Category') 等）
     #   4. 为图表柱子设置颜色：选中项深色，其他浅色
@@ -141,15 +142,9 @@ def main():
         """
         根据 filters 字典筛选数据，并更新所有 UI 组件
         """
-        
-        # Cross Filter Logic  
-        # 1. Update Filter UI 
+          
+        # 1. Filter UI 
         # 增加重置筛选功能, 仅当有筛选时出现重置按钮  
-        def reset_filters():
-            filters.clear()
-            ui.notify('Filters reset', type='positive')
-            refresh_dashboard()
-        
         filter_container.clear()
         if filters:
             with filter_container:
@@ -212,6 +207,13 @@ def main():
         chart3.update_figure(fig3)
 
     # Cross Filter Logic 
+    # 清除所有当前激活的筛选条件，恢复仪表板到初始的“无筛选”状态 
+    def reset_filters():
+            filters.clear()
+            ui.notify('Filters reset', type='positive')
+            refresh_dashboard()
+    
+    # Cross Filter Logic 
     # 监听图表点击事件 
     # 使用 chart.on('plotly_click', ...) 捕获点击  
     def handle_click(event, column_name):
@@ -222,11 +224,21 @@ def main():
             # 注意：event.args['points'][0]['x'] 依赖于你的 X 轴是类别名（如 State 名）。如果 X 是数值，需调整 
             click_val = event.args['points'][0]['x']
             
-            # 如果点击的是当前已经选中的值，可以考虑取消选择 (可选优化)
-            # 这里简单处理：直接更新
-            filters[column_name] = click_val
+            # # 这里简单处理：直接更新 
+            # filters[column_name] = click_val
             
-            ui.notify(f'Filtered by {column_name}: {click_val}', type='info')
+            # ui.notify(f'Filtered by {column_name}: {click_val}', type='info')
+            # refresh_dashboard()
+
+            # 优化: 如果点击的是当前已经选中的值, 说明用户想取消这个筛选 
+            if filters.get(column_name) == click_val:
+                filters.pop(column_name) # 移除筛选
+                ui.notify(f'Removed filter: {column_name}', type='info')
+            else:
+                # 否则，应用新的筛选
+                filters[column_name] = click_val
+                ui.notify(f'Filtered by {column_name}: {click_val}', type='info')
+            
             refresh_dashboard()
 
     chart1.on('plotly_click', lambda e: handle_click(e, 'Sub-Category'))
