@@ -80,9 +80,11 @@ def main():
         </style>
     ''')
 
-    ui.label('📊 Sales Overview').classes('text-2xl font-bold text-center mb-6 text-gray-800') 
-    # 创建一个可重复更新的 UI 区域 
-    filter_container = ui.row().classes('items-center gap-2 min-h-[40px] px-10')
+    # 仪表板通常由“头部”、“KPI栏”、“图表区”等大的板块组成。用 ui.column 或 ui.row 把这些大板块分别包裹起来，是构建复杂 UI 的最佳实践 
+    with ui.column().classes('w-full items-left mb-6'):
+        ui.label('📊 Sales Overview').classes('text-2xl font-bold text-center mb-6 text-gray-800')
+        # 创建一个可重复更新的 UI 区域 
+        filter_container = ui.row().classes('items-center gap-2 min-h-[40px] px-10')
 
     # --- KPIs --- 
     # 用 kpi_refs = {} 保存 KPI 标签的引用，这样后面才能用 .set_text() 修改它 
